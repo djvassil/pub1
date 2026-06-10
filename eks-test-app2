@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: eks-test-app
-  test: one
+  test: one2
 spec:
   replicas: 2
   selector:
