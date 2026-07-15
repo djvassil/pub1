@@ -1,5 +1,5 @@
 # Deliberately old base image — carries known OS-level CVEs
-FROM python:3.6-slim-buster
+FROM python:3.11-slim
 
 WORKDIR /app
 
