@@ -3,7 +3,7 @@ name: Upwind SCA Scan
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:   # lets you also trigger the scan manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   sca-scan:
@@ -23,3 +23,10 @@ jobs:
           docker_image: 'sca-test-app:latest'
           pull_image: false
           block_on: do_not_deploy
+
+      - name: Upwind ShiftLeft image publish
+        uses: upwindsecurity/shiftleft-create-image-publish-event-action@main
+        with:
+          upwind_client_id: ${{ secrets.UPWIND_CLIENT_ID }}
+          upwind_client_secret: ${{ secrets.UPWIND_CLIENT_SECRET }}
+          docker_image: 'sca-test-app:latest'
