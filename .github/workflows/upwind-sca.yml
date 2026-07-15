@@ -64,4 +64,5 @@ jobs:
             --upwind-client-id="${UPWIND_CLIENT_ID}" \
             --upwind-client-secret="${UPWIND_CLIENT_SECRET}" \
             --output-github-markdown=sca-report.md \
+            --result-wait-seconds=600 \
             --block-on=do_not_deploy
