@@ -22,6 +22,7 @@ jobs:
           upwind_client_secret: ${{ secrets.UPWIND_CLIENT_SECRET }}
           docker_image: 'sca-test-app:latest'
           pull_image: false
+          upwind_uri: eu.upwind.io
           block_on: do_not_deploy
 
       - name: Upwind ShiftLeft image publish
@@ -31,3 +32,4 @@ jobs:
           upwind_client_secret: ${{ secrets.UPWIND_CLIENT_SECRET }}
           docker_image: 'sca-test-app:latest'
           pull_image: false
+          upwind_uri: eu.upwind.io
