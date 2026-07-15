@@ -3,7 +3,7 @@ name: Upwind SCA Scan
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:   # lets you also run it manually from the Actions tab
+  workflow_dispatch:   # lets you also trigger the scan manually from the Actions tab
 
 jobs:
   sca-scan:
@@ -15,54 +15,11 @@ jobs:
       - name: Build the test image
         run: docker build -t sca-test-app:latest .
 
-      - name: Download ShiftLeft binary
-        env:
-          UPWIND_CLIENT_ID: ${{ secrets.UPWIND_CLIENT_ID }}
-          UPWIND_CLIENT_SECRET: ${{ secrets.UPWIND_CLIENT_SECRET }}
-        run: |
-          response=$(curl -sSL -X POST \
-            --url "https://oauth.upwind.io/oauth/token" \
-            --data "audience=https://agent.upwind.io" \
-            --data "client_id=${UPWIND_CLIENT_ID}" \
-            --data "client_secret=${UPWIND_CLIENT_SECRET}" \
-            --data "grant_type=client_credentials")
-
-          if ! TOKEN=$(echo "$response" | jq -r '.access_token // empty' 2>/dev/null); then
-            echo "Failed to parse JSON response: $response" >&2
-            exit 1
-          elif [ -z "$TOKEN" ]; then
-            echo "No access_token found in response: $response" >&2
-            exit 1
-          fi
-
-          OS=$(uname | tr '[:upper:]' '[:lower:]')
-          ARCH=$(uname -m | tr '[:upper:]' '[:lower:]')
-          case "$ARCH" in
-            x86_64) ARCH="amd64" ;;
-            aarch64|arm64) ARCH="arm64" ;;
-            *) echo "Unsupported architecture: $ARCH" >&2; exit 1 ;;
-          esac
-
-          UPWIND_AGENT_URL="https://releases.upwind.io/shiftleft/stable/$OS/$ARCH/shiftleft-$OS-$ARCH"
-          echo "Downloading from $UPWIND_AGENT_URL"
-          curl -fsS -H "Authorization: Bearer $TOKEN" -L "$UPWIND_AGENT_URL" -o ./shiftleft
-          chmod +x ./shiftleft
-
-      - name: Run SCA scan on the image
-        env:
-          UPWIND_CLIENT_ID: ${{ secrets.UPWIND_CLIENT_ID }}
-          UPWIND_CLIENT_SECRET: ${{ secrets.UPWIND_CLIENT_SECRET }}
-        run: |
-          ./shiftleft image \
-            --source=GITHUB_ACTIONS \
-            --initiator="${{ github.actor }}" \
-            --docker-image=sca-test-app:latest \
-            --docker-pull=false \
-            --repository="${{ github.repository }}" \
-            --branch="${{ github.ref_name }}" \
-            --commit-sha="${{ github.sha }}" \
-            --upwind-client-id="${UPWIND_CLIENT_ID}" \
-            --upwind-client-secret="${UPWIND_CLIENT_SECRET}" \
-            --output-github-markdown=sca-report.md \
-            --result-wait-seconds=600 \
-            --block-on=do_not_deploy
+      - name: Upwind ShiftLeft SCA scan
+        uses: upwindsecurity/shiftleft-create-image-scan-event-action@main
+        with:
+          upwind_client_id: ${{ secrets.UPWIND_CLIENT_ID }}
+          upwind_client_secret: ${{ secrets.UPWIND_CLIENT_SECRET }}
+          docker_image: 'sca-test-app:latest'
+          pull_image: false
+          block_on: do_not_deploy
