@@ -3,7 +3,7 @@ name: Upwind SCA Scan
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+  workflow_dispatch:   # lets you also trigger the scan manually from the Actions tab
 
 jobs:
   sca-scan:
@@ -30,3 +30,4 @@ jobs:
           upwind_client_id: ${{ secrets.UPWIND_CLIENT_ID }}
           upwind_client_secret: ${{ secrets.UPWIND_CLIENT_SECRET }}
           docker_image: 'sca-test-app:latest'
+          pull_image: false
