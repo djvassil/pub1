@@ -1,0 +1,36 @@
+name: Upwind SCA Scan (PR)
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Allow the job's token to post a comment back onto the pull request
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sca-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build the test image
+        run: docker build -t sca-test-app:latest .
+
+      - name: Upwind ShiftLeft SCA scan
+        uses: upwindsecurity/shiftleft-create-image-scan-event-action@main
+        with:
+          upwind_client_id: ${{ secrets.UPWIND_CLIENT_ID }}
+          upwind_client_secret: ${{ secrets.UPWIND_CLIENT_SECRET }}
+          docker_image: 'sca-test-app:latest'
+          pull_image: false
+          upwind_uri: eu.upwind.io
+          block_on: do_not_deploy
+          # --- PR comment options ---
+          add_comment: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_number: ${{ github.event.pull_request.number }}
+          repo_name: ${{ github.repository }}
